@@ -27,7 +27,6 @@ class Data {
   CU cCU;
   GLOBAL gGLOBAL;
   String sROWS;
-  Map<String, Message0> tTMaps;
   T tT;
   int iTROWS;
   int iTROWSPAGE;
@@ -106,32 +105,26 @@ class GLOBAL {
 }
 
 class T {
-  Message0 message0;
-  Message0 message1;
-  Message0 message2;
-
-  T({this.message0});
-
+  List<Message0> messages;
   T.fromJson(Map<String, dynamic> json) {
-    message0 = json['0'] != null ? new Message0.fromJson(json['0']) : null;
-    message1 = json['1'] != null ? new Message0.fromJson(json['1']) : null;
-    message2 = json['2'] != null ? new Message0.fromJson(json['2']) : null;
-
+    messages= <Message0>[];
+    for(int i=0;i<json.length/2;i++){
+      var indexstr=i.toString();
+      var jsbody=json[indexstr];
+      var model=Message0.fromJson(jsbody);
+      var addedItem=jsbody != null ? model : null;
+      messages.add(addedItem);
+    }
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.message0 != null) {
-      data['0'] = this.message0.toJson();
-      data['1'] = this.message1.toJson();
-      data['2'] = this.message2.toJson();
-    }
     return data;
   }
 }
 
 class Message0 {
-  int tid;
+ // int tid;
   int fid;
   int quoteFrom;
   String quoteTo;
@@ -150,10 +143,11 @@ class Message0 {
   P pP;
   String tpcurl;
 
-  Message0({this.tid, this.fid, this.quoteFrom, this.quoteTo, this.titlefont, this.topicMisc, this.author, this.authorid, this.subject, this.type, this.postdate, this.lastpost, this.lastposter, this.replies, this.lastmodify, this.recommend, this.pP, this.tpcurl});
+  Message0({ this.fid, this.quoteFrom, this.quoteTo, this.titlefont, this.topicMisc, this.author, this.authorid, this.subject, this.type, this.postdate, this.lastpost, this.lastposter, this.replies, this.lastmodify, this.recommend, this.pP, this.tpcurl});
 
   Message0.fromJson(Map<String, dynamic> json) {
-    tid = json['tid'];
+    print(json);
+    //tid = json['tid']!=null?json['tid']:null;
     fid = json['fid'];
     quoteFrom = json['quote_from'];
     quoteTo = json['quote_to'];
@@ -175,7 +169,7 @@ class Message0 {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['tid'] = this.tid;
+    //data['tid'] = this.tid;
     data['fid'] = this.fid;
     data['quote_from'] = this.quoteFrom;
     data['quote_to'] = this.quoteTo;
