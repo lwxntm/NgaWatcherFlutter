@@ -12,6 +12,7 @@ import 'ngajson.dart';
 
 import 'tool.dart';
 import 'package:bot_toast/bot_toast.dart';
+import 'package:myapp/aboutPage.dart' as myAbout;
 
 void main() => runApp(MyApp());
 
@@ -41,8 +42,10 @@ class DemoPage extends StatefulWidget {
 }
 
 class _DemoPageState extends State<DemoPage> {
-  var desiredPersonUID = "60013666";
-  var _messages = <ListItem>[];
+  var _allMessages=Map<String, List<ListItem>>();   //所有用户的发言，启动应用后初始化一次。
+  var _allUsers=Map<String, String>();  //所有用户的表
+  var _messages = <ListItem>[];   //临时容器，储存当前显示的列表
+  var _loadedCount=0;  //读取完成一个人后加一，若所有人都读取完可以提示用户。
 
   _getListData() {
     List<Widget> widgets = [];
@@ -71,6 +74,7 @@ class _DemoPageState extends State<DemoPage> {
           ),
           Divider(
             color: Colors.pink,
+
           ),
           Text(
             item.content,
@@ -80,46 +84,53 @@ class _DemoPageState extends State<DemoPage> {
     );
   }
 
-  changePersonToDeZhiDao() async {
-    desiredPersonUID = "39806656";
-    await loadData();
+  changePersonToDeZhiDao()  {
+    setState(() {
+      _messages=_allMessages['德指导'];
+    });
     var _ = BotToast.showText(text: "看看德指导说了啥",
-        contentColor: Colors.green,
-        borderRadius: BorderRadius.all(Radius.circular(8))); //弹出一个文本框;
+        contentColor: Colors.green); //弹出一个文本框;
 
   }
 
-  changePersonToTlaoshi() async {
-    desiredPersonUID = "60013666";
-    await loadData();
+  changePersonToTlaoshi()  {
+    setState(() {
+      _messages=_allMessages['T老师'];
+    });
      BotToast.showText(text: "看看T老师说了啥",
-         contentColor: Colors.green,
-         borderRadius: BorderRadius.all(Radius.circular(8))); //弹出一个文本框;
+         contentColor: Colors.green); //弹出一个文本框;
   }
 
-  changePersonToFerngLiSu() async {
-    desiredPersonUID = "63396125";
-    await loadData();
+  changePersonToFerngLiSu()  {
+    setState(() {
+      _messages=_allMessages['凤梨酥'];
+    });
      BotToast.showText(text: "看看凤梨酥说了啥",
-         contentColor: Colors.green,
-         borderRadius: BorderRadius.all(Radius.circular(8))); //弹出一个文本框;
+         contentColor: Colors.green); //弹出一个文本框;
+  }
+  changePersonbyName(String name)  {
+    setState(() {
+      _messages=_allMessages[name];
+    });
+    BotToast.showText(text: "看看$name 说了啥",
+        contentColor: Colors.green); //弹出一个文本框;
   }
 
-  changePersonToAns() async {
-    desiredPersonUID = "7974389";
-    await loadData();
+  changePersonToAns()  {
+    setState(() {
+      _messages=_allMessages['Ans大'];
+    });
     BotToast.showText(
         text: "看看A大说了啥",
-        contentColor: Colors.green,
-        borderRadius: BorderRadius.all(Radius.circular(8))); //弹出一个文本框;
+        contentColor: Colors.green); //弹出一个文本框;
   }
 
-  loadData() async {
+  Future<List<ListItem>> loadData(String user) async {
     var ngaPassportUid='41766312';
     var ngaPassportCid="Z8fp95hchil9f85mjso5fmh4nh9sb4pj84tjm8ju";
 
     var httpClient = HttpClient();
-    String dataURL = "https://bbs.nga.cn/thread.php?searchpost=1&authorid=$desiredPersonUID&lite=js&page=1&noprefix";
+    String dataURL = "https://bbs.nga.cn/thread.php?searchpost=1&authorid=$user&lite=js&page=1&noprefix";
     HttpClientRequest request = await httpClient.getUrl(Uri.parse(dataURL));
     request.headers.add('cookie',
         'ngaPassportUid=$ngaPassportUid;ngaPassportCid=$ngaPassportCid');
@@ -128,35 +139,71 @@ class _DemoPageState extends State<DemoPage> {
     Map userMap = json.decode(responseBody);
     var nj = new ngajson.fromJson(userMap);
     httpClient.close();
+
     var tempList = <ListItem>[];
     for (var item in nj.data.tT.messages) {
       tempList
           .add(new ListItem(item.subject, tool.FormatContent(item.pP.content)));
     }
-    setState(() {
-      _messages = tempList;
-    });
+    _loadedCount++;
+    if(_loadedCount==_allUsers.length){
+      BotToast.showText(text: "读取完成");
+    }
+    return tempList;
   }
 
   @override
   Widget build(BuildContext context) {
+
+    var b1=PopupMenuButton<String>(
+      onSelected: (String result) {
+        changePersonbyName(result);
+      },
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+        const PopupMenuItem<String>(
+          value: "凤梨酥",
+          child: Text('凤梨酥'),
+        ),
+        const PopupMenuItem<String>(
+          value: "T老师",
+          child: Text("T老师"),
+        ),
+        const PopupMenuItem<String>(
+          value: "德指导",
+          child: Text("德指导"),
+        ),
+        const PopupMenuItem<String>(
+          value: "Ans大",
+          child: Text("Ans大"),
+        ),
+      ],
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: Text("NGA大佬说了啥"),
         actions: [
+
           IconButton(
-            tooltip: "此功能目前禁用",
-            onPressed: null,
+            tooltip: "关于",
+            onPressed: (){
+              Navigator.push(context, MaterialPageRoute(builder: (context){
+                return myAbout.AboutPage();
+              }
+                  )
+              );
+              },
             icon: Icon(
               Icons.add,
             ),
           ),
+          b1,
         ],
       ),
       body: ListView(
         children: _getListData(),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -189,4 +236,28 @@ class _DemoPageState extends State<DemoPage> {
       ),
     );
   }
+
+  @override
+  void initState() {
+   loaddAllMessage();
+    super.initState();
+  }
+
+  void loaddAllMessage(){
+    _allUsers['德指导']="39806656";
+    _allUsers['T老师']="60013666";
+    _allUsers['凤梨酥']="63396125";
+    _allUsers['Ans大']="7974389";
+    _allUsers.forEach((key, value) async {
+      _allMessages[key]=await loadData(value);
+    });
+    BotToast.showText(text: "正在获取数据，请稍侯操作");
+  }
+
+
+
 }
+
+
+// This is the type used by the popup menu below.
+enum WhyFarther { harder, smarter, selfStarter, tradingCharter }

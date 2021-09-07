@@ -146,7 +146,7 @@ class Message0 {
   Message0({ this.fid, this.quoteFrom, this.quoteTo, this.titlefont, this.topicMisc, this.author, this.authorid, this.subject, this.type, this.postdate, this.lastpost, this.lastposter, this.replies, this.lastmodify, this.recommend, this.pP, this.tpcurl});
 
   Message0.fromJson(Map<String, dynamic> json) {
-    print(json);
+   // print(json);
     //tid = json['tid']!=null?json['tid']:null;
     fid = json['fid'];
     quoteFrom = json['quote_from'];
